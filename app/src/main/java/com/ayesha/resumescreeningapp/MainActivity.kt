@@ -28,8 +28,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,21 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.rememberCoroutineScope
-
-// =========================================================
-// OCEAN SERENITY PALETTE
-// =========================================================
 
 private val OceanDark = Color(0xFF001F27)
 private val OceanTeal = Color(0xFF154E60)
 private val OceanBlue = Color(0xFF5D8797)
 private val SoftSage = Color(0xFFAFC2B2)
 private val LightCream = Color(0xFFEEF4DD)
-
-// =========================================================
-// MAIN ACTIVITY
-// =========================================================
 
 class MainActivity : ComponentActivity() {
 
@@ -71,10 +67,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-// =========================================================
-// MAIN APP
-// =========================================================
 
 @Composable
 fun ResumeScreeningApp() {
@@ -103,9 +95,17 @@ fun ResumeScreeningApp() {
         mutableStateOf(false)
     }
 
-    // =====================================================
-    // FILE PICKER
-    // =====================================================
+    var selectedRole by remember {
+        mutableStateOf<JobRole?>(null)
+    }
+
+    var roleMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var analysisResult by remember {
+        mutableStateOf<KeywordAnalysisResult?>(null)
+    }
 
     val filePickerLauncher =
         rememberLauncherForActivityResult(
@@ -129,9 +129,7 @@ fun ResumeScreeningApp() {
                     ?.lowercase()
                     ?: ""
 
-            // =================================================
-            // TEXT FILE
-            // =================================================
+            analysisResult = null
 
             if (fileName.endsWith(".txt")) {
 
@@ -164,13 +162,7 @@ fun ResumeScreeningApp() {
                         "Unable to read the selected text file."
                 }
 
-            }
-
-            // =================================================
-            // PDF FILE
-            // =================================================
-
-            else if (fileName.endsWith(".pdf")) {
+            } else if (fileName.endsWith(".pdf")) {
 
                 isLoading = true
 
@@ -185,7 +177,7 @@ fun ResumeScreeningApp() {
                             uri = uri
                         )
 
-                    launch(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
 
                         isLoading = false
 
@@ -201,18 +193,12 @@ fun ResumeScreeningApp() {
                     }
                 }
 
-            }
-
-            else {
+            } else {
 
                 message =
                     "Please select a PDF or TXT file."
             }
         }
-
-    // =====================================================
-    // SCREEN
-    // =====================================================
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -238,10 +224,6 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(20.dp)
             )
 
-            // =================================================
-            // LOGO
-            // =================================================
-
             Box(
                 modifier = Modifier
                     .size(82.dp)
@@ -264,10 +246,6 @@ fun ResumeScreeningApp() {
             Spacer(
                 modifier = Modifier.height(24.dp)
             )
-
-            // =================================================
-            // TITLE
-            // =================================================
 
             Text(
                 text = "Resume Screening",
@@ -292,9 +270,9 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(32.dp)
             )
 
-            // =================================================
-            // UPLOAD CARD
-            // =================================================
+
+            // UPLOAD RESUME
+
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -377,9 +355,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // =================================================
+
             // LOADING
-            // =================================================
+
 
             if (isLoading) {
 
@@ -402,9 +380,9 @@ fun ResumeScreeningApp() {
                 )
             }
 
-            // =================================================
+
             // SELECTED FILE
-            // =================================================
+
 
             if (selectedFileName != null) {
 
@@ -462,9 +440,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // =================================================
+
             // MESSAGE
-            // =================================================
+
 
             if (message.isNotEmpty()) {
 
@@ -480,9 +458,162 @@ fun ResumeScreeningApp() {
                 )
             }
 
-            // =================================================
-            // RESUME TEXT
-            // =================================================
+
+            // JOB ROLE SELECTION
+
+
+            if (resumeText.isNotEmpty()) {
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 3.dp
+                    )
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(22.dp)
+                    ) {
+
+                        Text(
+                            text = "Select Job Role",
+                            color = OceanDark,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Choose the role to compare with the resume.",
+                            color = OceanBlue,
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(16.dp)
+                        )
+
+                        Box(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+
+                            Button(
+                                onClick = {
+                                    roleMenuExpanded = true
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = OceanDark,
+                                    contentColor = LightCream
+                                )
+                            ) {
+
+                                Text(
+                                    text =
+                                        selectedRole?.name
+                                            ?: "Choose Job Role"
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = roleMenuExpanded,
+                                onDismissRequest = {
+                                    roleMenuExpanded = false
+                                }
+                            ) {
+
+                                JobRoles.roles.forEach { role ->
+
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = role.name
+                                            )
+                                        },
+                                        onClick = {
+
+                                            selectedRole = role
+
+                                            roleMenuExpanded =
+                                                false
+
+                                            analysisResult =
+                                                null
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(16.dp)
+                        )
+
+                        if (selectedRole != null) {
+
+                            Button(
+                                onClick = {
+
+                                    val role =
+                                        selectedRole
+
+                                    if (role != null) {
+
+                                        analysisResult =
+                                            KeywordAnalyzer.analyze(
+                                                resumeText =
+                                                    resumeText,
+                                                jobRole =
+                                                    role
+                                            )
+
+                                        message =
+                                            "Resume keyword analysis completed."
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp),
+                                shape = RoundedCornerShape(14.dp),
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor =
+                                            OceanTeal,
+                                        contentColor =
+                                            Color.White
+                                    )
+                            ) {
+
+                                Text(
+                                    text = "Analyze Resume",
+                                    fontSize = 16.sp,
+                                    fontWeight =
+                                        FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // EXTRACTED TEXT
+
 
             if (resumeText.isNotEmpty()) {
 
@@ -524,13 +655,148 @@ fun ResumeScreeningApp() {
                 }
             }
 
+
+            // KEYWORD ANALYSIS RESULT
+
+            analysisResult?.let { result ->
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = OceanDark
+                    )
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                    ) {
+
+                        Text(
+                            text = "Keyword Analysis",
+                            color = LightCream,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        Text(
+                            text =
+                                selectedRole?.name ?: "",
+                            color = SoftSage,
+                            fontSize = 15.sp
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(22.dp)
+                        )
+
+                        Text(
+                            text =
+                                "${result.percentage}%",
+                            color = LightCream,
+                            fontSize = 42.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            text = "Keyword Match",
+                            color = OceanBlue,
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(22.dp)
+                        )
+
+                        Text(
+                            text = "Matched Keywords",
+                            color = LightCream,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        if (result.matchedKeywords.isNotEmpty()) {
+
+                            result.matchedKeywords.forEach { keyword ->
+
+                                Text(
+                                    text = "✓ $keyword",
+                                    color = SoftSage,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(
+                                        vertical = 3.dp
+                                    )
+                                )
+                            }
+
+                        } else {
+
+                            Text(
+                                text = "No matching keywords found.",
+                                color = SoftSage,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(18.dp)
+                        )
+
+                        Text(
+                            text = "Missing Keywords",
+                            color = LightCream,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(10.dp)
+                        )
+
+                        if (result.missingKeywords.isNotEmpty()) {
+
+                            result.missingKeywords.forEach { keyword ->
+
+                                Text(
+                                    text = "• $keyword",
+                                    color = SoftSage,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.padding(
+                                        vertical = 3.dp
+                                    )
+                                )
+                            }
+
+                        } else {
+
+                            Text(
+                                text =
+                                    "All required keywords found.",
+                                color = SoftSage,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(
                 modifier = Modifier.height(32.dp)
             )
-
-            // =================================================
-            // BOTTOM INFORMATION
-            // =================================================
 
             Row(
                 verticalAlignment =
@@ -566,10 +832,6 @@ fun ResumeScreeningApp() {
         }
     }
 }
-
-// =========================================================
-// GET FILE NAME
-// =========================================================
 
 private fun getFileName(
     context: Context,
@@ -608,7 +870,7 @@ private fun getFileName(
 
     } catch (e: Exception) {
 
-        // Keep default file name.
+
     }
 
     return fileName
