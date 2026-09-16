@@ -20,11 +20,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,10 +43,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
-
-// OCEAN SERENITY COLOR PALETTE
-
+// =========================================================
+// OCEAN SERENITY PALETTE
+// =========================================================
 
 private val OceanDark = Color(0xFF001F27)
 private val OceanTeal = Color(0xFF154E60)
@@ -51,9 +57,9 @@ private val OceanBlue = Color(0xFF5D8797)
 private val SoftSage = Color(0xFFAFC2B2)
 private val LightCream = Color(0xFFEEF4DD)
 
-
+// =========================================================
 // MAIN ACTIVITY
-
+// =========================================================
 
 class MainActivity : ComponentActivity() {
 
@@ -66,39 +72,40 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-
+// =========================================================
 // MAIN APP
-
+// =========================================================
 
 @Composable
 fun ResumeScreeningApp() {
 
-    // Android context
     val context = LocalContext.current
 
-    // Selected file name
+    val coroutineScope = rememberCoroutineScope()
+
     var selectedFileName by remember {
         mutableStateOf<String?>(null)
     }
 
-    // Selected file URI
     var selectedFileUri by remember {
         mutableStateOf<Uri?>(null)
     }
 
-    // Extracted resume text
     var resumeText by remember {
         mutableStateOf("")
     }
 
-    // Status message
     var message by remember {
         mutableStateOf("")
     }
 
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
 
+    // =====================================================
     // FILE PICKER
-
+    // =====================================================
 
     val filePickerLauncher =
         rememberLauncherForActivityResult(
@@ -109,29 +116,30 @@ fun ResumeScreeningApp() {
                 return@rememberLauncherForActivityResult
             }
 
-            // Save selected URI
             selectedFileUri = uri
 
-            // Get file name
-            selectedFileName = getFileName(
-                context = context,
-                uri = uri
-            )
+            selectedFileName =
+                getFileName(
+                    context = context,
+                    uri = uri
+                )
 
-
-            // TXT FILE
-
-
-            if (
+            val fileName =
                 selectedFileName
                     ?.lowercase()
-                    ?.endsWith(".txt") == true
-            ) {
+                    ?: ""
+
+            // =================================================
+            // TEXT FILE
+            // =================================================
+
+            if (fileName.endsWith(".txt")) {
 
                 try {
 
                     val inputStream =
-                        context.contentResolver.openInputStream(uri)
+                        context.contentResolver
+                            .openInputStream(uri)
 
                     resumeText =
                         inputStream
@@ -158,22 +166,53 @@ fun ResumeScreeningApp() {
 
             }
 
-
+            // =================================================
             // PDF FILE
+            // =================================================
 
+            else if (fileName.endsWith(".pdf")) {
+
+                isLoading = true
+
+                message =
+                    "Reading PDF resume..."
+
+                coroutineScope.launch(Dispatchers.IO) {
+
+                    val extractedText =
+                        PdfParser.extractText(
+                            context = context,
+                            uri = uri
+                        )
+
+                    launch(Dispatchers.Main) {
+
+                        isLoading = false
+
+                        resumeText =
+                            extractedText
+
+                        message =
+                            if (extractedText.isNotEmpty()) {
+                                "PDF resume parsed successfully."
+                            } else {
+                                "No readable text was found in this PDF."
+                            }
+                    }
+                }
+
+            }
 
             else {
 
-                resumeText = ""
-
                 message =
-                    "PDF selected."
+                    "Please select a PDF or TXT file."
             }
         }
 
-
+    // =====================================================
     // SCREEN
-
+    // =====================================================
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -184,20 +223,24 @@ fun ResumeScreeningApp() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(LightCream)
+                .verticalScroll(
+                    rememberScrollState()
+                )
                 .padding(
                     horizontal = 24.dp,
                     vertical = 32.dp
                 ),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment =
+                Alignment.CenterHorizontally
         ) {
 
             Spacer(
                 modifier = Modifier.height(20.dp)
             )
 
-
-            // APP LOGO
-
+            // =================================================
+            // LOGO
+            // =================================================
 
             Box(
                 modifier = Modifier
@@ -206,7 +249,8 @@ fun ResumeScreeningApp() {
                         color = OceanDark,
                         shape = RoundedCornerShape(22.dp)
                     ),
-                contentAlignment = Alignment.Center
+                contentAlignment =
+                    Alignment.Center
             ) {
 
                 Text(
@@ -221,9 +265,9 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(24.dp)
             )
 
-
+            // =================================================
             // TITLE
-
+            // =================================================
 
             Text(
                 text = "Resume Screening",
@@ -248,9 +292,9 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(32.dp)
             )
 
-
+            // =================================================
             // UPLOAD CARD
-
+            // =================================================
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -267,7 +311,8 @@ fun ResumeScreeningApp() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment =
+                        Alignment.CenterHorizontally
                 ) {
 
                     Text(
@@ -282,7 +327,8 @@ fun ResumeScreeningApp() {
                     )
 
                     Text(
-                        text = "Select a PDF or text resume to begin analysis.",
+                        text =
+                            "Select a PDF or text resume to begin analysis.",
                         color = OceanBlue,
                         fontSize = 14.sp,
                         textAlign = TextAlign.Center
@@ -291,10 +337,6 @@ fun ResumeScreeningApp() {
                     Spacer(
                         modifier = Modifier.height(22.dp)
                     )
-
-
-                    // UPLOAD BUTTON
-
 
                     Button(
                         onClick = {
@@ -305,7 +347,6 @@ fun ResumeScreeningApp() {
                                     "text/plain"
                                 )
                             )
-
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -336,9 +377,34 @@ fun ResumeScreeningApp() {
                 }
             }
 
+            // =================================================
+            // LOADING
+            // =================================================
 
-            // SELECTED FILE CARD
+            if (isLoading) {
 
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+                CircularProgressIndicator(
+                    color = OceanTeal
+                )
+
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
+                Text(
+                    text = "Extracting resume text...",
+                    color = OceanTeal,
+                    fontSize = 14.sp
+                )
+            }
+
+            // =================================================
+            // SELECTED FILE
+            // =================================================
 
             if (selectedFileName != null) {
 
@@ -385,9 +451,9 @@ fun ResumeScreeningApp() {
                         Text(
                             text =
                                 if (resumeText.isNotEmpty()) {
-                                    "Text loaded successfully"
+                                    "Text extracted successfully"
                                 } else {
-                                    "Ready for analysis"
+                                    "Waiting for text extraction"
                                 },
                             color = OceanTeal,
                             fontSize = 13.sp
@@ -396,9 +462,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-
-            // STATUS MESSAGE
-
+            // =================================================
+            // MESSAGE
+            // =================================================
 
             if (message.isNotEmpty()) {
 
@@ -414,9 +480,9 @@ fun ResumeScreeningApp() {
                 )
             }
 
-
-            // TEXT PREVIEW
-
+            // =================================================
+            // RESUME TEXT
+            // =================================================
 
             if (resumeText.isNotEmpty()) {
 
@@ -439,14 +505,14 @@ fun ResumeScreeningApp() {
                     ) {
 
                         Text(
-                            text = "Resume Text",
+                            text = "Extracted Resume Text",
                             color = OceanDark,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
 
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier = Modifier.height(12.dp)
                         )
 
                         Text(
@@ -459,16 +525,18 @@ fun ResumeScreeningApp() {
             }
 
             Spacer(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.height(32.dp)
             )
 
-
+            // =================================================
             // BOTTOM INFORMATION
-
+            // =================================================
 
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                verticalAlignment =
+                    Alignment.CenterVertically,
+                horizontalArrangement =
+                    Arrangement.Center
             ) {
 
                 Box(
@@ -485,7 +553,8 @@ fun ResumeScreeningApp() {
                 )
 
                 Text(
-                    text = "Resume analysis made simple",
+                    text =
+                        "Resume analysis made simple",
                     color = OceanBlue,
                     fontSize = 13.sp
                 )
@@ -498,9 +567,9 @@ fun ResumeScreeningApp() {
     }
 }
 
-
+// =========================================================
 // GET FILE NAME
-
+// =========================================================
 
 private fun getFileName(
     context: Context,
@@ -539,6 +608,7 @@ private fun getFileName(
 
     } catch (e: Exception) {
 
+        // Keep default file name.
     }
 
     return fileName

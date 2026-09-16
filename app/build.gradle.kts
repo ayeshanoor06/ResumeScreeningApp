@@ -49,6 +49,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
 
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+
 
     implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
