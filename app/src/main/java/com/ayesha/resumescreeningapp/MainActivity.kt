@@ -32,7 +32,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -73,7 +72,8 @@ fun ResumeScreeningApp() {
 
     val context = LocalContext.current
 
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope =
+        rememberCoroutineScope()
 
     var selectedFileName by remember {
         mutableStateOf<String?>(null)
@@ -107,9 +107,14 @@ fun ResumeScreeningApp() {
         mutableStateOf<KeywordAnalysisResult?>(null)
     }
 
+    var sentimentResult by remember {
+        mutableStateOf<SentimentAnalysisResult?>(null)
+    }
+
     val filePickerLauncher =
         rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocument()
+            contract =
+                ActivityResultContracts.OpenDocument()
         ) { uri: Uri? ->
 
             if (uri == null) {
@@ -130,6 +135,7 @@ fun ResumeScreeningApp() {
                     ?: ""
 
             analysisResult = null
+            sentimentResult = null
 
             if (fileName.endsWith(".txt")) {
 
@@ -169,7 +175,9 @@ fun ResumeScreeningApp() {
                 message =
                     "Reading PDF resume..."
 
-                coroutineScope.launch(Dispatchers.IO) {
+                coroutineScope.launch(
+                    Dispatchers.IO
+                ) {
 
                     val extractedText =
                         PdfParser.extractText(
@@ -177,7 +185,9 @@ fun ResumeScreeningApp() {
                             uri = uri
                         )
 
-                    withContext(Dispatchers.Main) {
+                    withContext(
+                        Dispatchers.Main
+                    ) {
 
                         isLoading = false
 
@@ -185,7 +195,9 @@ fun ResumeScreeningApp() {
                             extractedText
 
                         message =
-                            if (extractedText.isNotEmpty()) {
+                            if (
+                                extractedText.isNotEmpty()
+                            ) {
                                 "PDF resume parsed successfully."
                             } else {
                                 "No readable text was found in this PDF."
@@ -223,6 +235,10 @@ fun ResumeScreeningApp() {
             Spacer(
                 modifier = Modifier.height(20.dp)
             )
+
+            // -----------------------------
+            // APP LOGO
+            // -----------------------------
 
             Box(
                 modifier = Modifier
@@ -270,19 +286,21 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(32.dp)
             )
 
-
-            // UPLOAD RESUME
-
+            // -----------------------------
+            // UPLOAD CARD
+            // -----------------------------
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 3.dp
-                )
+                colors =
+                    CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                elevation =
+                    CardDefaults.cardElevation(
+                        defaultElevation = 3.dp
+                    )
             ) {
 
                 Column(
@@ -297,7 +315,8 @@ fun ResumeScreeningApp() {
                         text = "Upload your resume",
                         color = OceanDark,
                         fontSize = 21.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight =
+                            FontWeight.SemiBold
                     )
 
                     Spacer(
@@ -309,7 +328,8 @@ fun ResumeScreeningApp() {
                             "Select a PDF or text resume to begin analysis.",
                         color = OceanBlue,
                         fontSize = 14.sp,
-                        textAlign = TextAlign.Center
+                        textAlign =
+                            TextAlign.Center
                     )
 
                     Spacer(
@@ -329,17 +349,22 @@ fun ResumeScreeningApp() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(54.dp),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = OceanTeal,
-                            contentColor = Color.White
-                        )
+                        shape =
+                            RoundedCornerShape(14.dp),
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    OceanTeal,
+                                contentColor =
+                                    Color.White
+                            )
                     ) {
 
                         Text(
                             text = "Upload Resume",
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight =
+                                FontWeight.SemiBold
                         )
                     }
 
@@ -348,16 +373,17 @@ fun ResumeScreeningApp() {
                     )
 
                     Text(
-                        text = "Supported formats: PDF • TXT",
+                        text =
+                            "Supported formats: PDF • TXT",
                         color = OceanBlue,
                         fontSize = 13.sp
                     )
                 }
             }
 
-
+            // -----------------------------
             // LOADING
-
+            // -----------------------------
 
             if (isLoading) {
 
@@ -374,15 +400,16 @@ fun ResumeScreeningApp() {
                 )
 
                 Text(
-                    text = "Extracting resume text...",
+                    text =
+                        "Extracting resume text...",
                     color = OceanTeal,
                     fontSize = 14.sp
                 )
             }
 
-
+            // -----------------------------
             // SELECTED FILE
-
+            // -----------------------------
 
             if (selectedFileName != null) {
 
@@ -392,10 +419,13 @@ fun ResumeScreeningApp() {
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = SoftSage
-                    )
+                    shape =
+                        RoundedCornerShape(18.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                SoftSage
+                        )
                 ) {
 
                     Column(
@@ -405,10 +435,12 @@ fun ResumeScreeningApp() {
                     ) {
 
                         Text(
-                            text = "Selected Resume",
+                            text =
+                                "Selected Resume",
                             color = OceanDark,
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight =
+                                FontWeight.Medium
                         )
 
                         Spacer(
@@ -416,10 +448,12 @@ fun ResumeScreeningApp() {
                         )
 
                         Text(
-                            text = selectedFileName ?: "",
+                            text =
+                                selectedFileName ?: "",
                             color = OceanDark,
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
@@ -428,7 +462,9 @@ fun ResumeScreeningApp() {
 
                         Text(
                             text =
-                                if (resumeText.isNotEmpty()) {
+                                if (
+                                    resumeText.isNotEmpty()
+                                ) {
                                     "Text extracted successfully"
                                 } else {
                                     "Waiting for text extraction"
@@ -440,9 +476,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-
+            // -----------------------------
             // MESSAGE
-
+            // -----------------------------
 
             if (message.isNotEmpty()) {
 
@@ -454,13 +490,14 @@ fun ResumeScreeningApp() {
                     text = message,
                     color = OceanTeal,
                     fontSize = 13.sp,
-                    textAlign = TextAlign.Center
+                    textAlign =
+                        TextAlign.Center
                 )
             }
 
-
-            // JOB ROLE SELECTION
-
+            // -----------------------------
+            // JOB ROLE
+            // -----------------------------
 
             if (resumeText.isNotEmpty()) {
 
@@ -470,13 +507,17 @@ fun ResumeScreeningApp() {
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 3.dp
-                    )
+                    shape =
+                        RoundedCornerShape(20.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                Color.White
+                        ),
+                    elevation =
+                        CardDefaults.cardElevation(
+                            defaultElevation = 3.dp
+                        )
                 ) {
 
                     Column(
@@ -489,7 +530,8 @@ fun ResumeScreeningApp() {
                             text = "Select Job Role",
                             color = OceanDark,
                             fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
@@ -508,19 +550,26 @@ fun ResumeScreeningApp() {
                         )
 
                         Box(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier =
+                                Modifier.fillMaxWidth()
                         ) {
 
                             Button(
                                 onClick = {
-                                    roleMenuExpanded = true
+                                    roleMenuExpanded =
+                                        true
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = OceanDark,
-                                    contentColor = LightCream
-                                )
+                                modifier =
+                                    Modifier.fillMaxWidth(),
+                                shape =
+                                    RoundedCornerShape(14.dp),
+                                colors =
+                                    ButtonDefaults.buttonColors(
+                                        containerColor =
+                                            OceanDark,
+                                        contentColor =
+                                            LightCream
+                                    )
                             ) {
 
                                 Text(
@@ -531,28 +580,37 @@ fun ResumeScreeningApp() {
                             }
 
                             DropdownMenu(
-                                expanded = roleMenuExpanded,
+                                expanded =
+                                    roleMenuExpanded,
                                 onDismissRequest = {
-                                    roleMenuExpanded = false
+                                    roleMenuExpanded =
+                                        false
                                 }
                             ) {
 
-                                JobRoles.roles.forEach { role ->
+                                JobRoles.roles.forEach {
+                                        role ->
 
                                     DropdownMenuItem(
                                         text = {
+
                                             Text(
-                                                text = role.name
+                                                text =
+                                                    role.name
                                             )
                                         },
                                         onClick = {
 
-                                            selectedRole = role
+                                            selectedRole =
+                                                role
 
                                             roleMenuExpanded =
                                                 false
 
                                             analysisResult =
+                                                null
+
+                                            sentimentResult =
                                                 null
                                         }
                                     )
@@ -582,14 +640,21 @@ fun ResumeScreeningApp() {
                                                     role
                                             )
 
+                                        sentimentResult =
+                                            SentimentAnalyzer.analyze(
+                                                resumeText =
+                                                    resumeText
+                                            )
+
                                         message =
-                                            "Resume keyword analysis completed."
+                                            "Resume analysis completed."
                                     }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(52.dp),
-                                shape = RoundedCornerShape(14.dp),
+                                shape =
+                                    RoundedCornerShape(14.dp),
                                 colors =
                                     ButtonDefaults.buttonColors(
                                         containerColor =
@@ -600,7 +665,8 @@ fun ResumeScreeningApp() {
                             ) {
 
                                 Text(
-                                    text = "Analyze Resume",
+                                    text =
+                                        "Analyze Resume",
                                     fontSize = 16.sp,
                                     fontWeight =
                                         FontWeight.SemiBold
@@ -611,52 +677,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-
-            // EXTRACTED TEXT
-
-
-            if (resumeText.isNotEmpty()) {
-
-                Spacer(
-                    modifier = Modifier.height(20.dp)
-                )
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color.White
-                    )
-                ) {
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    ) {
-
-                        Text(
-                            text = "Extracted Resume Text",
-                            color = OceanDark,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(
-                            modifier = Modifier.height(12.dp)
-                        )
-
-                        Text(
-                            text = resumeText,
-                            color = OceanDark,
-                            fontSize = 14.sp
-                        )
-                    }
-                }
-            }
-
-
-            // KEYWORD ANALYSIS RESULT
+            // -----------------------------
+            // KEYWORD RESULT
+            // -----------------------------
 
             analysisResult?.let { result ->
 
@@ -666,10 +689,13 @@ fun ResumeScreeningApp() {
 
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = OceanDark
-                    )
+                    shape =
+                        RoundedCornerShape(20.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                OceanDark
+                        )
                 ) {
 
                     Column(
@@ -679,10 +705,12 @@ fun ResumeScreeningApp() {
                     ) {
 
                         Text(
-                            text = "Keyword Analysis",
+                            text =
+                                "Keyword Analysis",
                             color = LightCream,
                             fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
@@ -705,11 +733,13 @@ fun ResumeScreeningApp() {
                                 "${result.percentage}%",
                             color = LightCream,
                             fontSize = 42.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Text(
-                            text = "Keyword Match",
+                            text =
+                                "Keyword Match",
                             color = OceanBlue,
                             fontSize = 14.sp
                         )
@@ -719,34 +749,43 @@ fun ResumeScreeningApp() {
                         )
 
                         Text(
-                            text = "Matched Keywords",
+                            text =
+                                "Matched Keywords",
                             color = LightCream,
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
                             modifier = Modifier.height(10.dp)
                         )
 
-                        if (result.matchedKeywords.isNotEmpty()) {
+                        if (
+                            result.matchedKeywords
+                                .isNotEmpty()
+                        ) {
 
-                            result.matchedKeywords.forEach { keyword ->
+                            result.matchedKeywords
+                                .forEach { keyword ->
 
-                                Text(
-                                    text = "✓ $keyword",
-                                    color = SoftSage,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(
-                                        vertical = 3.dp
+                                    Text(
+                                        text =
+                                            "✓ $keyword",
+                                        color = SoftSage,
+                                        fontSize = 14.sp,
+                                        modifier =
+                                            Modifier.padding(
+                                                vertical = 3.dp
+                                            )
                                     )
-                                )
-                            }
+                                }
 
                         } else {
 
                             Text(
-                                text = "No matching keywords found.",
+                                text =
+                                    "No matching keywords found.",
                                 color = SoftSage,
                                 fontSize = 14.sp
                             )
@@ -757,29 +796,37 @@ fun ResumeScreeningApp() {
                         )
 
                         Text(
-                            text = "Missing Keywords",
+                            text =
+                                "Missing Keywords",
                             color = LightCream,
                             fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
                         )
 
                         Spacer(
                             modifier = Modifier.height(10.dp)
                         )
 
-                        if (result.missingKeywords.isNotEmpty()) {
+                        if (
+                            result.missingKeywords
+                                .isNotEmpty()
+                        ) {
 
-                            result.missingKeywords.forEach { keyword ->
+                            result.missingKeywords
+                                .forEach { keyword ->
 
-                                Text(
-                                    text = "• $keyword",
-                                    color = SoftSage,
-                                    fontSize = 14.sp,
-                                    modifier = Modifier.padding(
-                                        vertical = 3.dp
+                                    Text(
+                                        text =
+                                            "• $keyword",
+                                        color = SoftSage,
+                                        fontSize = 14.sp,
+                                        modifier =
+                                            Modifier.padding(
+                                                vertical = 3.dp
+                                            )
                                     )
-                                )
-                            }
+                                }
 
                         } else {
 
@@ -794,9 +841,224 @@ fun ResumeScreeningApp() {
                 }
             }
 
+            // -----------------------------
+            // SENTIMENT RESULT
+            // -----------------------------
+
+            sentimentResult?.let { result ->
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+                Card(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    shape =
+                        RoundedCornerShape(20.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                Color.White
+                        ),
+                    elevation =
+                        CardDefaults.cardElevation(
+                            defaultElevation = 3.dp
+                        )
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp)
+                    ) {
+
+                        Text(
+                            text =
+                                "Sentiment Analysis",
+                            color = OceanDark,
+                            fontSize = 22.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(18.dp)
+                        )
+
+                        Text(
+                            text =
+                                "${result.sentimentScore}%",
+                            color = OceanTeal,
+                            fontSize = 40.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Text(
+                            text =
+                                result.sentimentLabel,
+                            color = OceanBlue,
+                            fontSize = 16.sp,
+                            fontWeight =
+                                FontWeight.SemiBold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(22.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Positive Terms",
+                            color = OceanDark,
+                            fontSize = 17.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        if (
+                            result.positiveWords
+                                .isNotEmpty()
+                        ) {
+
+                            result.positiveWords
+                                .forEach { word ->
+
+                                    Text(
+                                        text =
+                                            "✓ $word",
+                                        color = OceanTeal,
+                                        fontSize = 14.sp,
+                                        modifier =
+                                            Modifier.padding(
+                                                vertical = 3.dp
+                                            )
+                                    )
+                                }
+
+                        } else {
+
+                            Text(
+                                text =
+                                    "No positive terms detected.",
+                                color = OceanBlue,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        Spacer(
+                            modifier = Modifier.height(18.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Negative Terms",
+                            color = OceanDark,
+                            fontSize = 17.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        if (
+                            result.negativeWords
+                                .isNotEmpty()
+                        ) {
+
+                            result.negativeWords
+                                .forEach { word ->
+
+                                    Text(
+                                        text =
+                                            "• $word",
+                                        color = OceanBlue,
+                                        fontSize = 14.sp,
+                                        modifier =
+                                            Modifier.padding(
+                                                vertical = 3.dp
+                                            )
+                                    )
+                                }
+
+                        } else {
+
+                            Text(
+                                text =
+                                    "No negative terms detected.",
+                                color = OceanBlue,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            // -----------------------------
+            // EXTRACTED TEXT
+            // -----------------------------
+
+            if (resumeText.isNotEmpty()) {
+
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+
+                Card(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    shape =
+                        RoundedCornerShape(18.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                Color.White
+                        )
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+
+                        Text(
+                            text =
+                                "Extracted Resume Text",
+                            color = OceanDark,
+                            fontSize = 18.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
+                        )
+
+                        Text(
+                            text =
+                                resumeText,
+                            color = OceanDark,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
             Spacer(
                 modifier = Modifier.height(32.dp)
             )
+
+            // -----------------------------
+            // FOOTER
+            // -----------------------------
 
             Row(
                 verticalAlignment =
@@ -810,7 +1072,8 @@ fun ResumeScreeningApp() {
                         .size(8.dp)
                         .background(
                             color = OceanBlue,
-                            shape = RoundedCornerShape(50)
+                            shape =
+                                RoundedCornerShape(50)
                         )
                 )
 
@@ -838,7 +1101,8 @@ private fun getFileName(
     uri: Uri
 ): String {
 
-    var fileName = "Selected Resume"
+    var fileName =
+        "Selected Resume"
 
     try {
 
@@ -870,7 +1134,7 @@ private fun getFileName(
 
     } catch (e: Exception) {
 
-
+        // Keep default file name.
     }
 
     return fileName
