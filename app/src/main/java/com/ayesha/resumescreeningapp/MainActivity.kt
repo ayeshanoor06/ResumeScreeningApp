@@ -111,6 +111,10 @@ fun ResumeScreeningApp() {
         mutableStateOf<SentimentAnalysisResult?>(null)
     }
 
+    var fitScoreResult by remember {
+        mutableStateOf<FitScoreResult?>(null)
+    }
+
     val filePickerLauncher =
         rememberLauncherForActivityResult(
             contract =
@@ -136,6 +140,7 @@ fun ResumeScreeningApp() {
 
             analysisResult = null
             sentimentResult = null
+            fitScoreResult = null
 
             if (fileName.endsWith(".txt")) {
 
@@ -236,16 +241,16 @@ fun ResumeScreeningApp() {
                 modifier = Modifier.height(20.dp)
             )
 
-            // -----------------------------
-            // APP LOGO
-            // -----------------------------
+            // LOGO
+
 
             Box(
                 modifier = Modifier
                     .size(82.dp)
                     .background(
                         color = OceanDark,
-                        shape = RoundedCornerShape(22.dp)
+                        shape =
+                            RoundedCornerShape(22.dp)
                     ),
                 contentAlignment =
                     Alignment.Center
@@ -255,7 +260,8 @@ fun ResumeScreeningApp() {
                     text = "RS",
                     color = LightCream,
                     fontSize = 27.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight =
+                        FontWeight.Bold
                 )
             }
 
@@ -267,8 +273,10 @@ fun ResumeScreeningApp() {
                 text = "Resume Screening",
                 color = OceanDark,
                 fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                fontWeight =
+                    FontWeight.Bold,
+                textAlign =
+                    TextAlign.Center
             )
 
             Spacer(
@@ -276,26 +284,31 @@ fun ResumeScreeningApp() {
             )
 
             Text(
-                text = "AI-powered resume analysis",
+                text =
+                    "AI-powered resume analysis",
                 color = OceanBlue,
                 fontSize = 16.sp,
-                textAlign = TextAlign.Center
+                textAlign =
+                    TextAlign.Center
             )
 
             Spacer(
                 modifier = Modifier.height(32.dp)
             )
 
-            // -----------------------------
-            // UPLOAD CARD
-            // -----------------------------
+
+            // UPLOAD
+
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                modifier =
+                    Modifier.fillMaxWidth(),
+                shape =
+                    RoundedCornerShape(20.dp),
                 colors =
                     CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor =
+                            Color.White
                     ),
                 elevation =
                     CardDefaults.cardElevation(
@@ -312,7 +325,8 @@ fun ResumeScreeningApp() {
                 ) {
 
                     Text(
-                        text = "Upload your resume",
+                        text =
+                            "Upload your resume",
                         color = OceanDark,
                         fontSize = 21.sp,
                         fontWeight =
@@ -361,7 +375,8 @@ fun ResumeScreeningApp() {
                     ) {
 
                         Text(
-                            text = "Upload Resume",
+                            text =
+                                "Upload Resume",
                             fontSize = 16.sp,
                             fontWeight =
                                 FontWeight.SemiBold
@@ -381,9 +396,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // -----------------------------
+
             // LOADING
-            // -----------------------------
+
 
             if (isLoading) {
 
@@ -407,9 +422,9 @@ fun ResumeScreeningApp() {
                 )
             }
 
-            // -----------------------------
+
             // SELECTED FILE
-            // -----------------------------
+
 
             if (selectedFileName != null) {
 
@@ -418,7 +433,8 @@ fun ResumeScreeningApp() {
                 )
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     shape =
                         RoundedCornerShape(18.dp),
                     colors =
@@ -476,9 +492,9 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // -----------------------------
+
             // MESSAGE
-            // -----------------------------
+
 
             if (message.isNotEmpty()) {
 
@@ -495,9 +511,9 @@ fun ResumeScreeningApp() {
                 )
             }
 
-            // -----------------------------
+
             // JOB ROLE
-            // -----------------------------
+
 
             if (resumeText.isNotEmpty()) {
 
@@ -506,7 +522,8 @@ fun ResumeScreeningApp() {
                 )
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     shape =
                         RoundedCornerShape(20.dp),
                     colors =
@@ -527,7 +544,8 @@ fun ResumeScreeningApp() {
                     ) {
 
                         Text(
-                            text = "Select Job Role",
+                            text =
+                                "Select Job Role",
                             color = OceanDark,
                             fontSize = 20.sp,
                             fontWeight =
@@ -612,6 +630,9 @@ fun ResumeScreeningApp() {
 
                                             sentimentResult =
                                                 null
+
+                                            fitScoreResult =
+                                                null
                                         }
                                     )
                                 }
@@ -632,7 +653,7 @@ fun ResumeScreeningApp() {
 
                                     if (role != null) {
 
-                                        analysisResult =
+                                        val keywordAnalysis =
                                             KeywordAnalyzer.analyze(
                                                 resumeText =
                                                     resumeText,
@@ -640,10 +661,24 @@ fun ResumeScreeningApp() {
                                                     role
                                             )
 
-                                        sentimentResult =
+                                        val sentimentAnalysis =
                                             SentimentAnalyzer.analyze(
                                                 resumeText =
                                                     resumeText
+                                            )
+
+                                        analysisResult =
+                                            keywordAnalysis
+
+                                        sentimentResult =
+                                            sentimentAnalysis
+
+                                        fitScoreResult =
+                                            FitScoreCalculator.calculate(
+                                                keywordScore =
+                                                    keywordAnalysis.percentage,
+                                                sentimentScore =
+                                                    sentimentAnalysis.sentimentScore
                                             )
 
                                         message =
@@ -677,18 +712,133 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // -----------------------------
-            // KEYWORD RESULT
-            // -----------------------------
+
+            // FINAL FIT SCORE
+
+
+            fitScoreResult?.let { result ->
+
+                Spacer(
+                    modifier =
+                        Modifier.height(24.dp)
+                )
+
+                Card(
+                    modifier =
+                        Modifier.fillMaxWidth(),
+                    shape =
+                        RoundedCornerShape(22.dp),
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor =
+                                OceanTeal
+                        ),
+                    elevation =
+                        CardDefaults.cardElevation(
+                            defaultElevation = 5.dp
+                        )
+                ) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(26.dp),
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text =
+                                "Overall Fit Percentage",
+                            color = LightCream,
+                            fontSize = 21.sp,
+                            fontWeight =
+                                FontWeight.Bold,
+                            textAlign =
+                                TextAlign.Center
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.height(18.dp)
+                        )
+
+                        Text(
+                            text =
+                                "${result.finalScore}%",
+                            color = LightCream,
+                            fontSize = 52.sp,
+                            fontWeight =
+                                FontWeight.Bold
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.height(6.dp)
+                        )
+
+                        Text(
+                            text =
+                                selectedRole?.name ?: "",
+                            color = SoftSage,
+                            fontSize = 15.sp
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.height(22.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Keyword Match: ${result.keywordScore}%",
+                            color = LightCream,
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.height(6.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Sentiment Score: ${result.sentimentScore}%",
+                            color = LightCream,
+                            fontSize = 14.sp
+                        )
+
+                        Spacer(
+                            modifier =
+                                Modifier.height(16.dp)
+                        )
+
+                        Text(
+                            text =
+                                "Based on resume text analysis",
+                            color = SoftSage,
+                            fontSize = 13.sp,
+                            textAlign =
+                                TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+
+            // KEYWORD ANALYSIS
+
 
             analysisResult?.let { result ->
 
                 Spacer(
-                    modifier = Modifier.height(24.dp)
+                    modifier =
+                        Modifier.height(24.dp)
                 )
 
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier =
+                        Modifier.fillMaxWidth(),
                     shape =
                         RoundedCornerShape(20.dp),
                     colors =
@@ -714,7 +864,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            modifier =
+                                Modifier.height(8.dp)
                         )
 
                         Text(
@@ -725,7 +876,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(22.dp)
+                            modifier =
+                                Modifier.height(22.dp)
                         )
 
                         Text(
@@ -745,7 +897,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(22.dp)
+                            modifier =
+                                Modifier.height(22.dp)
                         )
 
                         Text(
@@ -758,7 +911,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier =
+                                Modifier.height(10.dp)
                         )
 
                         if (
@@ -792,7 +946,8 @@ fun ResumeScreeningApp() {
                         }
 
                         Spacer(
-                            modifier = Modifier.height(18.dp)
+                            modifier =
+                                Modifier.height(18.dp)
                         )
 
                         Text(
@@ -805,7 +960,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(10.dp)
+                            modifier =
+                                Modifier.height(10.dp)
                         )
 
                         if (
@@ -841,14 +997,15 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // -----------------------------
-            // SENTIMENT RESULT
-            // -----------------------------
+
+            // SENTIMENT ANALYSIS
+
 
             sentimentResult?.let { result ->
 
                 Spacer(
-                    modifier = Modifier.height(24.dp)
+                    modifier =
+                        Modifier.height(24.dp)
                 )
 
                 Card(
@@ -883,7 +1040,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(18.dp)
+                            modifier =
+                                Modifier.height(18.dp)
                         )
 
                         Text(
@@ -905,7 +1063,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(22.dp)
+                            modifier =
+                                Modifier.height(22.dp)
                         )
 
                         Text(
@@ -918,7 +1077,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            modifier =
+                                Modifier.height(8.dp)
                         )
 
                         if (
@@ -952,7 +1112,8 @@ fun ResumeScreeningApp() {
                         }
 
                         Spacer(
-                            modifier = Modifier.height(18.dp)
+                            modifier =
+                                Modifier.height(18.dp)
                         )
 
                         Text(
@@ -965,7 +1126,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(8.dp)
+                            modifier =
+                                Modifier.height(8.dp)
                         )
 
                         if (
@@ -1001,14 +1163,15 @@ fun ResumeScreeningApp() {
                 }
             }
 
-            // -----------------------------
+
             // EXTRACTED TEXT
-            // -----------------------------
+
 
             if (resumeText.isNotEmpty()) {
 
                 Spacer(
-                    modifier = Modifier.height(24.dp)
+                    modifier =
+                        Modifier.height(24.dp)
                 )
 
                 Card(
@@ -1039,7 +1202,8 @@ fun ResumeScreeningApp() {
                         )
 
                         Spacer(
-                            modifier = Modifier.height(12.dp)
+                            modifier =
+                                Modifier.height(12.dp)
                         )
 
                         Text(
@@ -1053,12 +1217,9 @@ fun ResumeScreeningApp() {
             }
 
             Spacer(
-                modifier = Modifier.height(32.dp)
+                modifier =
+                    Modifier.height(32.dp)
             )
-
-            // -----------------------------
-            // FOOTER
-            // -----------------------------
 
             Row(
                 verticalAlignment =
@@ -1078,7 +1239,8 @@ fun ResumeScreeningApp() {
                 )
 
                 Spacer(
-                    modifier = Modifier.width(8.dp)
+                    modifier =
+                        Modifier.width(8.dp)
                 )
 
                 Text(
@@ -1090,7 +1252,8 @@ fun ResumeScreeningApp() {
             }
 
             Spacer(
-                modifier = Modifier.height(8.dp)
+                modifier =
+                    Modifier.height(8.dp)
             )
         }
     }
@@ -1134,7 +1297,7 @@ private fun getFileName(
 
     } catch (e: Exception) {
 
-        // Keep default file name.
+
     }
 
     return fileName
