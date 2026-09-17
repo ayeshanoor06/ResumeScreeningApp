@@ -35,6 +35,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -96,14 +97,26 @@ fun ResumeScreeningApp() {
     val coroutineScope =
         rememberCoroutineScope()
 
-    // Room Database
+
+    // ROOM DATABASE
+
+
     val database = remember {
         AppDatabase.getDatabase(context)
     }
 
 
 
-    // STATES
+    // SCREEN STATE
+
+
+    var showAdminPanel by remember {
+        mutableStateOf(false)
+    }
+
+
+
+    // RESUME STATES
 
 
     var selectedFileName by remember {
@@ -144,6 +157,57 @@ fun ResumeScreeningApp() {
 
     var fitScoreResult by remember {
         mutableStateOf<FitScoreResult?>(null)
+    }
+
+
+
+    // ADMIN PANEL
+
+
+    if (showAdminPanel) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(LightCream)
+        ) {
+
+            // BACK BUTTON
+
+            TextButton(
+                onClick = {
+                    showAdminPanel = false
+                },
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 8.dp
+                    )
+            ) {
+
+                Text(
+                    text = "← Back to Resume Screening",
+
+                    color = OceanTeal,
+
+                    fontSize = 15.sp,
+
+                    fontWeight =
+                        FontWeight.SemiBold
+                )
+            }
+
+
+            // ADMIN PANEL
+
+            AdminPanel(
+                database = database
+            )
+        }
+
+        return
     }
 
 
@@ -278,7 +342,7 @@ fun ResumeScreeningApp() {
 
 
 
-    // MAIN SCREEN
+    // MAIN RESUME SCREEN
 
 
     Surface(
@@ -326,8 +390,11 @@ fun ResumeScreeningApp() {
 
                 Text(
                     text = "RS",
+
                     color = LightCream,
+
                     fontSize = 27.sp,
+
                     fontWeight =
                         FontWeight.Bold
                 )
@@ -345,10 +412,14 @@ fun ResumeScreeningApp() {
 
             Text(
                 text = "Resume Screening",
+
                 color = OceanDark,
+
                 fontSize = 30.sp,
+
                 fontWeight =
                     FontWeight.Bold,
+
                 textAlign =
                     TextAlign.Center
             )
@@ -362,11 +433,60 @@ fun ResumeScreeningApp() {
             Text(
                 text =
                     "AI-powered resume analysis",
+
                 color = OceanBlue,
+
                 fontSize = 16.sp,
+
                 textAlign =
                     TextAlign.Center
             )
+
+
+            Spacer(
+                modifier = Modifier.height(20.dp)
+            )
+
+
+
+            // ADMIN PANEL BUTTON
+
+
+            Button(
+                onClick = {
+
+                    showAdminPanel = true
+
+                },
+
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+
+                shape =
+                    RoundedCornerShape(14.dp),
+
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor =
+                            OceanDark,
+
+                        contentColor =
+                            LightCream
+                    )
+            ) {
+
+                Text(
+                    text =
+                        "Open Admin Panel",
+
+                    fontSize = 15.sp,
+
+                    fontWeight =
+                        FontWeight.SemiBold
+                )
+            }
 
 
             Spacer(
@@ -409,8 +529,11 @@ fun ResumeScreeningApp() {
                     Text(
                         text =
                             "Upload your resume",
+
                         color = OceanDark,
+
                         fontSize = 21.sp,
+
                         fontWeight =
                             FontWeight.SemiBold
                     )
@@ -425,8 +548,11 @@ fun ResumeScreeningApp() {
                     Text(
                         text =
                             "Select a PDF or text resume to begin analysis.",
+
                         color = OceanBlue,
+
                         fontSize = 14.sp,
+
                         textAlign =
                             TextAlign.Center
                     )
@@ -824,7 +950,6 @@ fun ResumeScreeningApp() {
 
                                         // KEYWORD ANALYSIS
 
-
                                         val keywordAnalysis =
                                             KeywordAnalyzer.analyze(
                                                 resumeText =
@@ -835,9 +960,7 @@ fun ResumeScreeningApp() {
                                             )
 
 
-
                                         // SENTIMENT ANALYSIS
-
 
                                         val sentimentAnalysis =
                                             SentimentAnalyzer.analyze(
@@ -846,9 +969,7 @@ fun ResumeScreeningApp() {
                                             )
 
 
-
                                         // FIT SCORE
-
 
                                         val fitResult =
                                             FitScoreCalculator.calculate(
@@ -862,9 +983,7 @@ fun ResumeScreeningApp() {
                                             )
 
 
-
                                         // SHOW RESULTS
-
 
                                         analysisResult =
                                             keywordAnalysis
@@ -880,52 +999,57 @@ fun ResumeScreeningApp() {
                                         // SAVE CANDIDATE TO ROOM
 
 
-                                        coroutineScope.launch {
+                                        val candidate =
+                                            CandidateEntity(
 
-                                            val candidate =
-                                                CandidateEntity(
+                                                fileName =
+                                                    selectedFileName
+                                                        ?: "Unknown Resume",
 
-                                                    fileName =
-                                                        selectedFileName
-                                                            ?: "Unknown Resume",
+                                                jobRole =
+                                                    role.name,
 
-                                                    jobRole =
-                                                        role.name,
+                                                keywordScore =
+                                                    keywordAnalysis
+                                                        .percentage,
 
-                                                    keywordScore =
-                                                        keywordAnalysis
-                                                            .percentage,
+                                                sentimentScore =
+                                                    sentimentAnalysis
+                                                        .sentimentScore,
 
-                                                    sentimentScore =
-                                                        sentimentAnalysis
-                                                            .sentimentScore,
+                                                fitScore =
+                                                    fitResult
+                                                        .finalScore,
 
-                                                    fitScore =
-                                                        fitResult
-                                                            .finalScore,
+                                                sentimentLabel =
+                                                    sentimentAnalysis
+                                                        .sentimentLabel,
 
-                                                    sentimentLabel =
-                                                        sentimentAnalysis
-                                                            .sentimentLabel,
+                                                matchedKeywords =
+                                                    keywordAnalysis
+                                                        .matchedKeywords
+                                                        .joinToString(
+                                                            ", "
+                                                        ),
 
-                                                    matchedKeywords =
-                                                        keywordAnalysis
-                                                            .matchedKeywords
-                                                            .joinToString(
-                                                                ", "
-                                                            ),
+                                                missingKeywords =
+                                                    keywordAnalysis
+                                                        .missingKeywords
+                                                        .joinToString(
+                                                            ", "
+                                                        ),
 
-                                                    missingKeywords =
-                                                        keywordAnalysis
-                                                            .missingKeywords
-                                                            .joinToString(
-                                                                ", "
-                                                            ),
+                                                isShortlisted =
+                                                    false
+                                            )
 
-                                                    isShortlisted =
-                                                        false
-                                                )
 
+                                        // Room database operation
+                                        // runs on background thread
+
+                                        coroutineScope.launch(
+                                            Dispatchers.IO
+                                        ) {
 
                                             database
                                                 .candidateDao()
@@ -1120,6 +1244,7 @@ fun ResumeScreeningApp() {
 
 
             // KEYWORD ANALYSIS
+
 
             analysisResult?.let { result ->
 
